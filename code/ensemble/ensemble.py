@@ -1,14 +1,14 @@
 import numpy as np
 import pandas as pd
 import datetime
-from sklearn.cross_validation import KFold
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import KFold
+from sklearn.model_selection import train_test_split
 import time
 from sklearn import preprocessing
 from xgboost import XGBRegressor
 from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor, GradientBoostingRegressor
-from sklearn.grid_search import GridSearchCV
-from sklearn.cross_validation import ShuffleSplit
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import ShuffleSplit
 from sklearn.metrics import make_scorer, mean_squared_error
 from sklearn.linear_model import Ridge, LassoCV,LassoLarsCV, ElasticNet
 from sklearn.kernel_ridge import KernelRidge
@@ -60,9 +60,9 @@ class ensemble(object):
         self.base_models = base_models
     def fit_predict(self,train,test,ytr):
         X = train.values
-	y = ytr.values
+        y = ytr.values
         T = test.values
-        folds = list(KFold(len(y), n_folds = self.n_folds, shuffle = True, random_state = 0))
+        folds = list(KFold(len(y), n_splits = self.n_folds, shuffle = True, random_state = 0).split(X))
         S_train = np.zeros((X.shape[0],len(self.base_models)))
         S_test = np.zeros((T.shape[0],len(self.base_models))) 
         for i,reg in enumerate(base_models):
@@ -80,10 +80,10 @@ class ensemble(object):
          
         print ("Stacking base models...")
         # tuning the stacker
-	param_grid = {
-	     'alpha': [1e-3,5e-3,1e-2,5e-2,1e-1,0.2,0.3,0.4,0.5,0.8,1e0,3,5,7,1e1],
-	}
-	grid = GridSearchCV(estimator=self.stacker, param_grid=param_grid, n_jobs=1, cv=5, scoring=RMSE)
+        param_grid = {
+            'alpha': [1e-3,5e-3,1e-2,5e-2,1e-1,0.2,0.3,0.4,0.5,0.8,1e0,3,5,7,1e1],
+        }
+        grid = GridSearchCV(estimator=self.stacker, param_grid=param_grid, n_jobs=1, cv=5, scoring=RMSE)
         grid.fit(S_train, y)
         try:
             print('Param grid:')
@@ -113,7 +113,7 @@ base_models = [
         RandomForestRegressor(
             n_jobs=1, random_state=0,
             n_estimators=500, max_features=20,
-	    max_depth = 7
+            max_depth = 7
         ),
         ExtraTreesRegressor(
             n_jobs=1, random_state=0, 
@@ -128,7 +128,7 @@ base_models = [
             n_estimators=500, max_features=10, max_depth=6,
             learning_rate=0.05, subsample=0.8
         ),
-	GradientBoostingRegressor(
+        GradientBoostingRegressor(
             random_state=0, 
             n_estimators=500, max_features=15, max_depth=6,
             learning_rate=0.05, subsample=0.8
@@ -144,20 +144,19 @@ base_models = [
             n_estimators=500, max_depth=7,
             learning_rate=0.05, subsample=0.8, colsample_bytree=0.75
         ),
-	LassoCV(alphas = [1, 0.1, 0.001, 0.0005]),
-	KNeighborsRegressor(n_neighbors = 5),
-       	KNeighborsRegressor(n_neighbors = 10),
-      	KNeighborsRegressor(n_neighbors = 15),
-        KNeighborsRegressor(n_neighbors = 25),
-	LassoLarsCV(),
-	ElasticNet(),
-	SVR()
+    LassoCV(alphas = [1, 0.1, 0.001, 0.0005]),
+    KNeighborsRegressor(n_neighbors = 5),
+    KNeighborsRegressor(n_neighbors = 10),
+    KNeighborsRegressor(n_neighbors = 15),
+    KNeighborsRegressor(n_neighbors = 25),
+    LassoLarsCV(),
+    ElasticNet(),
+    SVR()
     ]
 
-ensem = ensemble(
-        n_folds=5,
-	stacker=Ridge(),
-        base_models=base_models
+ensem = ensemble(n_folds=5,
+                 stacker=Ridge(),
+                 base_models=base_models
     )
 
 X_train,X_test,y_train = data_preprocess(train,test)

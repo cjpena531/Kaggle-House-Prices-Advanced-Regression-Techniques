@@ -4,8 +4,8 @@ import pandas as pd
 import xgboost as xgb
 from sklearn import preprocessing
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, ExtraTreesRegressor
-from sklearn.grid_search import GridSearchCV
-from sklearn.cross_validation import ShuffleSplit
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import ShuffleSplit
 from sklearn.metrics import make_scorer, mean_squared_error
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.svm import SVR
