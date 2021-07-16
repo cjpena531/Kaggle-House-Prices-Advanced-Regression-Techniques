@@ -62,7 +62,7 @@ class ensemble(object):
         X = train.values
         y = ytr.values
         T = test.values
-        folds = list(KFold(len(y), n_splits = self.n_folds, shuffle = True, random_state = 0).split(X))
+        folds = list(KFold(n_splits = self.n_folds, shuffle = True, random_state = 0).split(y))
         S_train = np.zeros((X.shape[0],len(self.base_models)))
         S_test = np.zeros((T.shape[0],len(self.base_models))) 
         for i,reg in enumerate(base_models):
